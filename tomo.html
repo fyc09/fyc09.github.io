@@ -1,0 +1,308 @@
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>clock</title>
+</head>
+
+<body>
+  <div id="body">
+    <div id="note"></div>
+    <div id="hint"></div>
+    <div id="pbar">
+      <div align="left" id="bar"></div>
+    </div>
+    <style>
+      html {
+        cursor: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      #body {
+        margin-top: 40px;
+      }
+
+      #hint {
+        margin-top: 10px;
+        color: white;
+        font-size: 20pt;
+        font-family: 'Times New Roman', Times, serif;
+        text-align: center;
+      }
+
+      #note {
+        margin-bottom: 0px;
+        color: white;
+        font-size: 40pt;
+        font-family: 'Times New Roman', Times, serif;
+        text-align: center;
+      }
+
+      #pbar {
+        margin-top: 25px;
+        height: 10px;
+        border-radius: 5px;
+      }
+
+      #bar {
+        height: 10px;
+        border-radius: 5px;
+      }
+
+      #sounds {
+        display: none;
+      }
+
+      .wait-work-body {
+        background-color: #FF5722;
+      }
+
+      .wait-work-pbar {
+        background-color: #E64A19;
+      }
+
+      .confirm-work-body {
+        background-color: #673AB7;
+      }
+
+      .confirm-work-pbar {
+        background-color: #D1C4E9;
+      }
+
+      .confirm-work-bar {
+        background-color: #448AFF;
+      }
+
+      .stop-work-body {
+        background-color: #FFC107;
+      }
+
+      .stop-work-pbar {
+        background-color: #FFA000;
+      }
+
+      .wait-rest-body {
+        background-color: #009688;
+      }
+
+      .wait-rest-pbar {
+        background-color: #00796B;
+      }
+
+      .confirm-rest-body {
+        background-color: #4CAF50;
+      }
+
+      .confirm-rest-pbar {
+        background-color: #C8E6C9;
+      }
+
+      .confirm-rest-bar {
+        background-color: #8BC34A;
+      }
+
+      .stop-rest-body {
+        background-color: #3F51B5;
+      }
+
+      .stop-rest-pbar {
+        background-color: #303F9F;
+      }
+    </style>
+    <script>
+      "use strict";
+      var note = document.getElementById("note");
+      var hint = document.getElementById("hint");
+      var pbar = document.getElementById("pbar");
+      var bar = document.getElementById("bar");
+      var body = document.getElementsByTagName("body")[0];
+
+      document.addEventListener('keydown', handlePress)
+
+      var resting = false;
+      var stopped = false;
+      var confirmed = false;
+
+      var pos_m = 25;
+      var pos_s = 1;
+
+      var neg_m = 0;
+      var neg_s = -1;
+
+      var noteMsg = "计时器";
+
+      load();
+      bigUpdate();
+
+      function handlePress(event) {
+        switch (event.keyCode) {
+          case 32:
+            stop();
+            break;
+          case 78:
+            next();
+            break;
+          case 67:
+            change();
+            break;
+        }
+      }
+
+      function load() {
+        var val = localStorage.getItem("state")
+        var state = JSON.parse(val);
+        if (state) {
+          resting = state.resting;
+          stopped = state.stopped;
+          confirmed = state.confirmed;
+          pos_m = state.pos_m;
+          pos_s = state.pos_s;
+          neg_m = state.neg_m;
+          neg_s = state.neg_s;
+          noteMsg = state.noteMsg;
+        } else {
+          save();
+        }
+      }
+
+      function save() {
+        localStorage.setItem("state", JSON.stringify({
+          resting: resting,
+          confirmed: confirmed,
+          stopped: stopped,
+          neg_s: neg_s,
+          neg_m: neg_m,
+          pos_s: pos_s,
+          pos_m: pos_m,
+          noteMsg: noteMsg,
+        }));
+      }
+
+      function stop() {
+        neg_m = 0;
+        neg_s = 0;
+        if (stopped) {
+          stopped = false;
+        } else if (confirmed) {
+          stopped = true;
+        } else {
+          confirmed = true;
+        }
+        clearInterval(updateNo);
+        update();
+        updateNo = setInterval(update, 1000);
+        bigUpdate();
+      }
+
+      function next() {
+        resting = !resting;
+        stopped = false;
+        confirmed = false;
+        pos_m = resting ? 5 : 25;
+        pos_s = 1;
+        neg_m = 0;
+        neg_s = -1;
+        clearInterval(updateNo);
+        update();
+        updateNo = setInterval(update, 1000);
+        bigUpdate();
+      }
+
+      function change() {
+        var msg = prompt();
+        if (msg) {
+          noteMsg = msg;
+          save();
+          bigUpdate();
+        }
+      }
+
+      function update() {
+        var m;
+        var s;
+
+        if (stopped || !confirmed) {
+          if (neg_s == 59) {
+            neg_s = 0;
+            neg_m++;
+          } else {
+            neg_s++;
+          }
+          m = neg_m;
+          s = neg_s;
+          bar.style.width = "0%";
+        } else {
+          if (pos_m == 0 && pos_s == 0) {
+            resting = !resting;
+            pos_m = resting ? 5 : 25;
+            pos_s = 1;
+            confirmed = false;
+          } else if (pos_s == 0) {
+            pos_s = 59;
+            pos_m--;
+          } else {
+            pos_s--;
+          }
+          m = pos_m;
+          s = pos_s;
+
+          var total = (resting ? 5 : 25) * 60;
+          var passed = pos_m * 60 + pos_s;
+          bar.style.width = (100 - passed / total * 100).toString() + "%";
+        }
+
+        save();
+
+        return;
+      }
+
+      function bigUpdate() {
+        note.innerHTML = noteMsg;
+
+        if (stopped) {
+          if (resting) {
+            hint.innerHTML = "暂停休息";
+          } else {
+            hint.innerHTML = "暂停工作";
+          }
+        } else if (confirmed) {
+          if (resting) {
+            hint.innerHTML = "休息";
+          }
+          else {
+            hint.innerHTML = "工作";
+          }
+        } else {
+          if (resting) {
+            hint.innerHTML = "等待休息";
+          } else {
+            hint.innerHTML = "等待工作";
+          }
+        }
+
+        var className = "";
+        if (stopped) {
+          className += "stop";
+        } else if (confirmed) {
+          className += "confirm";
+        } else {
+          className += "wait";
+        }
+        if (resting) {
+          className += "-rest";
+        } else {
+          className += "-work";
+        }
+        body.className = className + "-body";
+        bar.className = className + "-bar";
+        pbar.className = className + "-pbar";
+      }
+
+      update();
+      var updateNo = setInterval(update, 1000);
+    </script>
+</body>
+
+</html>
