@@ -1,12 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>diolam</title>
+    <style>
+        kbd {
+            padding: 5px;
+            border-radius: 4px;
+            background-color: dimgray;
+            color: white;
+        }
+
+        code {
+            padding: 1px;
+            background-color: lightgray;
+            color: black;
+        }
+
+    </style>
 </head>
+
 <body>
     <h1>diolam 的主页</h1>
-    <a href="tomo.html">番茄时钟</a>
+    <h2>番茄时钟</h2>
+    <a href="tomo.html">进入</a>
+    <p>
+        按 <kbd>N</kbd> 键切换工作/休息，进入工作/休息后需要按下 <kbd>Space</kbd> 键来确认进入该状态以开始计时，之后你可以随时按下 <kbd>Space</kbd> 键来暂停计时。
+    </p>
+    <p>
+        按下 <kbd>C</kbd> 键后键入文本以来改变屏幕上的标题。
+    </p>
+    <h2>备忘录</h2>
+    <a href="paper.html">进入</a>
+    <p>
+        单击屏幕中间输入框并键入以编辑内容，内容是实时保存在本地的 <code>localStorage</code> 中的，无需手动保存。<kbd>Tab</kbd> 键被用来输入制表符。
+    </p>
+    <p>
+        屏幕下方的时间是实时的当地时间。
+    </p>
+    <p>
+        选中部分文字并按下 <kbd>Ctrl</kbd>+<kbd>P</kbd> 可以打印选中的文字，若不选中任何文字则会打印全部内容。
+    </p>
 </body>
+
 </html>
